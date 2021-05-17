@@ -1,13 +1,11 @@
 from pathlib import Path
 
-import numpy
 import hnumpy as hnp
-
+import numpy
 import torch
 import torchvision
-from torchvision import datasets
-
 from hnumpy.config import CompilationConfig
+from torchvision import datasets
 
 
 def get_mnist_dataset(batch_size: int, num_workers: int = 0):
@@ -20,21 +18,6 @@ def get_mnist_dataset(batch_size: int, num_workers: int = 0):
 
     return torch.utils.data.DataLoader(test_data, batch_size=batch_size, num_workers=num_workers)
 
-fc1_w = None
-fc1_b = None
-fc2_w = None
-fc2_b = None
-
-def mnist_mlp2_forward(x: numpy.ndarray):
-    """
-    input_data must be the flattened array for the MNIST sample
-    """
-    x = numpy.matmul(x, fc1_w)
-    x = x + fc1_b
-    x = numpy.maximum(x, 0)
-    x = numpy.matmul(x, fc2_w)
-    x = x + fc2_b
-    return x
 
 MODEL_WEIGHTS_DIR = Path(__file__).parent / "weights"
 
@@ -44,8 +27,29 @@ FC1_BIASES = MODEL_WEIGHTS_DIR / "fc1_biases.npy"
 FC2_WEIGHTS = MODEL_WEIGHTS_DIR / "fc2_weights.npy"
 FC2_BIASES = MODEL_WEIGHTS_DIR / "fc2_biases.npy"
 
+
+class MLP2:
+    def __init__(self, fc1_w, fc1_b, fc2_w, fc2_b) -> None:
+        self.fc1_w = fc1_w
+        self.fc1_b = fc1_b
+        self.fc2_w = fc2_w
+        self.fc2_b = fc2_b
+
+    def forward(self, x):
+        """
+        input_data must be the flattened array for the MNIST sample
+        """
+        x = numpy.matmul(x, self.fc1_w)
+        x = x + self.fc1_b
+        x = numpy.maximum(x, 0)
+        x = numpy.matmul(x, self.fc2_w)
+        x = x + self.fc2_b
+        return x
+
+    __call__ = forward
+
+
 def main():
-    global fc1_w, fc1_b, fc2_w, fc2_b
     fc1_w = numpy.load(FC1_WEIGHTS).T
     fc1_b = numpy.load(FC1_BIASES).T
     fc2_w = numpy.load(FC2_WEIGHTS).T
@@ -53,18 +57,20 @@ def main():
 
     print(fc1_w.shape, fc1_b.shape, fc2_w.shape, fc2_b.shape)
 
-    batch_size = 2
+    mnist_mlp2 = MLP2(fc1_w, fc1_b, fc2_w, fc2_b)
+
+    batch_size = 10
 
     test_data_loader = get_mnist_dataset(batch_size)
 
-    config = CompilationConfig(parameter_optimizer="handselected")
+    config = CompilationConfig(parameter_optimizer="genetic")
 
     data, target = iter(test_data_loader).next()
     data: numpy.ndarray = data.cpu().numpy()
     data = numpy.reshape(data, (data.shape[0], -1))
     target: numpy.ndarray = target.cpu().numpy()
 
-    output = mnist_mlp2_forward(data)
+    output = mnist_mlp2(data)
     clear_preds = numpy.argmax(output, 1)
     print(list(map(lambda x: not x, clear_preds - target)))
     print(clear_preds)
@@ -73,8 +79,14 @@ def main():
 
     # compile the function
     fhe_mnist_mlp2_forward = hnp.homomorphic_fn(
-        mnist_mlp2_forward,
-        hnp.encrypted_ndarray(bounds=(0.0, 1.0), shape=(batch_size, 28 * 28,)),
+        mnist_mlp2.forward,
+        hnp.encrypted_ndarray(
+            bounds=(0.0, 1.0),
+            shape=(
+                batch_size,
+                28 * 28,
+            ),
+        ),
         config=config,
     )
 
