@@ -27,16 +27,16 @@ def main():
 
     fhe_square_perimeter_output = fhe_square_perimeter(square_lengths)[0]
 
-    square_perimeter_output_max_diff = numpy.abs(
+    square_perimeter_output_abs_diff = numpy.abs(
         clear_square_perimeters_output - fhe_square_perimeter_output
     )
 
-    relative_error = square_perimeter_output_max_diff / clear_square_perimeters_output
+    relative_error = square_perimeter_output_abs_diff / clear_square_perimeters_output
 
     print(f"Clear square perimeters\n{clear_square_perimeters_output}")
     print(f"FHE square perimeters\n{fhe_square_perimeter_output}")
 
-    print(f"Max abs error square perimeters:\n{square_perimeter_output_max_diff}")
+    print(f"Max abs error square perimeters:\n{square_perimeter_output_abs_diff.max()}")
     print(
         "Max/min/mean relative error:\n"
         f"{relative_error.max()} {relative_error.min()} {relative_error.mean()}"
