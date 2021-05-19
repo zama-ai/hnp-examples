@@ -8,12 +8,13 @@ def square_perimeter(square_side_length: numpy.ndarray):
 
 
 def square_area(square_side_length: numpy.ndarray):
-    return numpy.multiply(square_side_length, square_side_length)
+    return square_side_length ** 2
 
 
 def run_square_perimeter():
     print("\n=================\nSquare perimeter")
     square_lengths = numpy.arange(1, 1025, 1, dtype=numpy.float32)
+    square_lengths = numpy.ascontiguousarray(numpy.broadcast_to(square_lengths.reshape((1,1024)), (10,1024)))
     print(f"Square side lengths:\n{square_lengths}")
     clear_square_perimeters_output = square_perimeter(square_lengths)
 
@@ -30,7 +31,7 @@ def run_square_perimeter():
         config=config,
     )
 
-    fhe_square_perimeter_output = fhe_square_perimeter(square_lengths)[0]
+    fhe_square_perimeter_output = fhe_square_perimeter.validate(square_lengths)[0]
 
     square_perimeter_output_abs_diff = numpy.abs(
         clear_square_perimeters_output - fhe_square_perimeter_output
@@ -42,10 +43,13 @@ def run_square_perimeter():
     print(f"FHE square perimeters\n{fhe_square_perimeter_output}")
 
     print(f"Max abs error square perimeters:\n{square_perimeter_output_abs_diff.max()}")
+    print("Mean absolute error:\n"
+            f"{square_perimeter_output_abs_diff.mean()}")
     print(
         "Max/min/mean relative error:\n"
         f"{relative_error.max()} {relative_error.min()} {relative_error.mean()}"
     )
+    print(f"Expected precision: {fhe_square_perimeter.expected_precision()}")
 
 
 def run_square_area():
@@ -67,7 +71,7 @@ def run_square_area():
         config=config,
     )
 
-    fhe_square_area_output = fhe_square_area(square_lengths)[0]
+    fhe_square_area_output = fhe_square_area.validate(square_lengths)[0]
 
     square_area_output_abs_diff = numpy.abs(
         clear_square_areas_output - fhe_square_area_output
@@ -79,10 +83,13 @@ def run_square_area():
     print(f"FHE square area\n{fhe_square_area_output}")
 
     print(f"Max abs error square area:\n{square_area_output_abs_diff.max()}")
+    print("Mean absolute error:\n"
+            f"{square_area_output_abs_diff.mean()}")
     print(
         "Max/min/mean relative error:\n"
         f"{relative_error.max()} {relative_error.min()} {relative_error.mean()}"
     )
+    print(f"Expected precision: {fhe_square_area.expected_precision()}")
 
 
 def main():
