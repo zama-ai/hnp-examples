@@ -29,6 +29,7 @@ FC2_BIASES = MODEL_WEIGHTS_DIR / "fc2_biases.npy"
 
 
 class MLP2:
+
     def __init__(self, fc1_w, fc1_b, fc2_w, fc2_b) -> None:
         self.fc1_w = fc1_w
         self.fc1_b = fc1_b
@@ -59,7 +60,7 @@ def main():
 
     mnist_mlp2 = MLP2(fc1_w, fc1_b, fc2_w, fc2_b)
 
-    batch_size = 10
+    batch_size = 20
 
     test_data_loader = get_mnist_dataset(batch_size)
 
@@ -72,9 +73,11 @@ def main():
 
     output = mnist_mlp2(data)
     clear_preds = numpy.argmax(output, 1)
-    print(list(map(lambda x: not x, clear_preds - target)))
-    print(clear_preds)
-    print(target)
+    good_ones = list(map(lambda x: not x, clear_preds - target))
+    print("Good ones", good_ones)
+    print("Expected", clear_preds)
+    print("Achieved", target)
+    print("Accuracy", sum(good_ones) / len(good_ones))
     # preds = h(data)
 
     # compile the function
@@ -97,10 +100,11 @@ def main():
 
     fhe_outputs = fhe_mnist_mlp2_forward.encrypt_and_run(keys, data)[0]
     fhe_preds = numpy.argmax(fhe_outputs, 1)
-    print(list(map(lambda x: not x, fhe_preds - target)))
-    print(fhe_preds)
-    print(target)
-
+    good_ones = list(map(lambda x: not x, fhe_preds - target))
+    print("Good ones", good_ones)
+    print("Expected", fhe_preds)
+    print("Achieved", target)
+    print("Accuracy", sum(good_ones) / len(good_ones))
 
 if __name__ == "__main__":
     main()
