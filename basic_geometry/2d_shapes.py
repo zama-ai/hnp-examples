@@ -25,21 +25,25 @@ def run_square_perimeter(square_lengths: numpy.ndarray):
     print(f"Square side lengths:\n{square_lengths}")
     clear_square_perimeters_output = square_perimeter(square_lengths)
 
-    config = CompilationConfig(parameter_optimizer="genetic")
+    config = CompilationConfig(parameter_optimizer="genetic", examples=(square_lengths,))
     # "handselected"
     # "genetic"
 
-    fhe_square_perimeter = hnp.homomorphic_fn(
+    fhe_square_perimeter = hnp.compile_fhe(
         square_perimeter,
-        hnp.encrypted_ndarray(
-            bounds=(square_lengths.min(), square_lengths.max()),
-            shape=square_lengths.shape,
-        ),
+        {
+            "square_side_length": hnp.encrypted_ndarray(
+                bounds=(square_lengths.min(), square_lengths.max()),
+                shape=square_lengths.shape,
+            )
+        },
         config=config,
     )
 
-    fhe_square_perimeter_output = fhe_square_perimeter.validate(square_lengths)[0]
+    context = fhe_square_perimeter.create_context()
+    keys = context.keygen()
 
+    fhe_square_perimeter_output = fhe_square_perimeter.encrypt_and_run(keys, square_lengths)[0]
     square_perimeter_output_abs_diff = numpy.abs(
         clear_square_perimeters_output - fhe_square_perimeter_output
     )
@@ -52,13 +56,11 @@ def run_square_perimeter(square_lengths: numpy.ndarray):
     print(f"Expected precision: {fhe_square_perimeter.expected_precision()}")
 
     print(f"Max abs error square perimeters:\n{square_perimeter_output_abs_diff.max()}")
-    print("Mean absolute error:\n"
-            f"{square_perimeter_output_abs_diff.mean()}")
+    print("Mean absolute error:\n" f"{square_perimeter_output_abs_diff.mean()}")
     print(
         "Max/min/mean relative error:\n"
         f"{relative_error.max()} {relative_error.min()} {relative_error.mean()}"
     )
-    print(f"Expected precision: {fhe_square_perimeter.expected_precision()}")
 
 
 def run_square_area(square_lengths: numpy.ndarray):
@@ -66,20 +68,25 @@ def run_square_area(square_lengths: numpy.ndarray):
     print(f"Square side lengths:\n{square_lengths}")
     clear_square_areas_output = square_area(square_lengths)
 
-    config = CompilationConfig(parameter_optimizer="genetic")
+    config = CompilationConfig(parameter_optimizer="genetic", examples=(square_lengths,))
     # "handselected"
     # "genetic"
 
-    fhe_square_area = hnp.homomorphic_fn(
+    fhe_square_area = hnp.compile_fhe(
         square_area,
-        hnp.encrypted_ndarray(
-            bounds=(square_lengths.min(), square_lengths.max()),
-            shape=square_lengths.shape,
-        ),
+        {
+            "square_side_length": hnp.encrypted_ndarray(
+                bounds=(square_lengths.min(), square_lengths.max()),
+                shape=square_lengths.shape,
+            )
+        },
         config=config,
     )
 
-    fhe_square_area_output = fhe_square_area.validate(square_lengths)[0]
+    context = fhe_square_area.create_context()
+    keys = context.keygen()
+
+    fhe_square_area_output = fhe_square_area.encrypt_and_run(keys, square_lengths)[0]
 
     square_area_output_abs_diff = numpy.abs(clear_square_areas_output - fhe_square_area_output)
 
@@ -91,13 +98,11 @@ def run_square_area(square_lengths: numpy.ndarray):
     print(f"Expected precision: {fhe_square_area.expected_precision()}")
 
     print(f"Max abs error square area:\n{square_area_output_abs_diff.max()}")
-    print("Mean absolute error:\n"
-            f"{square_area_output_abs_diff.mean()}")
+    print("Mean absolute error:\n" f"{square_area_output_abs_diff.mean()}")
     print(
         "Max/min/mean relative error:\n"
         f"{relative_error.max()} {relative_error.min()} {relative_error.mean()}"
     )
-    print(f"Expected precision: {fhe_square_area.expected_precision()}")
 
 
 def run_square():
@@ -111,20 +116,26 @@ def run_rect_perimeter(rect_sides_lengths: numpy.ndarray):
     print(f"Rect sides lengths:\n{rect_sides_lengths}")
     clear_rect_perimeter_output = rect_perimeter(rect_sides_lengths)
 
+    # config = CompilationConfig(parameter_optimizer="genetic", examples=(rect_sides_lengths,))
     config = CompilationConfig(parameter_optimizer="genetic")
     # "handselected"
     # "genetic"
 
-    fhe_rect_perimeter = hnp.homomorphic_fn(
+    fhe_rect_perimeter = hnp.compile_fhe(
         rect_perimeter,
-        hnp.encrypted_ndarray(
-            bounds=(rect_sides_lengths.min(), rect_sides_lengths.max()),
-            shape=rect_sides_lengths.shape,
-        ),
+        {
+            "rect_sides_length": hnp.encrypted_ndarray(
+                bounds=(rect_sides_lengths.min(), rect_sides_lengths.max()),
+                shape=rect_sides_lengths.shape,
+            )
+        },
         config=config,
     )
 
-    fhe_rect_perimeter_output = fhe_rect_perimeter(rect_sides_lengths)[0]
+    context = fhe_rect_perimeter.create_context()
+    keys = context.keygen()
+
+    fhe_rect_perimeter_output = fhe_rect_perimeter.encrypt_and_run(keys, rect_sides_lengths)[0]
 
     rect_perimeter_output_abs_diff = numpy.abs(
         clear_rect_perimeter_output - fhe_rect_perimeter_output
@@ -149,20 +160,26 @@ def run_rect_area(rect_sides_lengths: numpy.ndarray):
     print(f"Rect sides lengths:\n{rect_sides_lengths}")
     clear_rect_area_output = rect_area(rect_sides_lengths)
 
+    # config = CompilationConfig(parameter_optimizer="genetic", examples=(rect_sides_lengths,))
     config = CompilationConfig(parameter_optimizer="genetic")
     # "handselected"
     # "genetic"
 
-    fhe_rect_area = hnp.homomorphic_fn(
+    fhe_rect_area = hnp.compile_fhe(
         rect_area,
-        hnp.encrypted_ndarray(
-            bounds=(rect_sides_lengths.min(), rect_sides_lengths.max()),
-            shape=rect_sides_lengths.shape,
-        ),
+        {
+            "rect_sides_length": hnp.encrypted_ndarray(
+                bounds=(rect_sides_lengths.min(), rect_sides_lengths.max()),
+                shape=rect_sides_lengths.shape,
+            )
+        },
         config=config,
     )
 
-    fhe_rect_area_output = fhe_rect_area(rect_sides_lengths)[0]
+    context = fhe_rect_area.create_context()
+    keys = context.keygen()
+
+    fhe_rect_area_output = fhe_rect_area.encrypt_and_run(keys, rect_sides_lengths)[0]
 
     rect_area_output_abs_diff = numpy.abs(clear_rect_area_output - fhe_rect_area_output)
 
