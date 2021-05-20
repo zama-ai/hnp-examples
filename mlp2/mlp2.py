@@ -10,7 +10,7 @@ from torchvision import datasets
 
 def get_mnist_dataset(batch_size: int, num_workers: int = 0):
     test_data = datasets.MNIST(
-        root="data/",
+        root=str(Path(__file__).resolve().absolute().parent.parent / "data"),
         train=False,
         download=True,
         transform=torchvision.transforms.ToTensor(),
@@ -78,19 +78,24 @@ def main():
     # preds = h(data)
 
     # compile the function
-    fhe_mnist_mlp2_forward = hnp.homomorphic_fn(
+    fhe_mnist_mlp2_forward = hnp.compile_fhe(
         mnist_mlp2.forward,
-        hnp.encrypted_ndarray(
-            bounds=(0.0, 1.0),
-            shape=(
-                batch_size,
-                28 * 28,
-            ),
-        ),
+        {
+            "x": hnp.encrypted_ndarray(
+                bounds=(0.0, 1.0),
+                shape=(
+                    batch_size,
+                    28 * 28,
+                ),
+            )
+        },
         config=config,
     )
 
-    fhe_outputs = fhe_mnist_mlp2_forward(data)[0]
+    context = fhe_mnist_mlp2_forward.create_context()
+    keys = context.keygen()
+
+    fhe_outputs = fhe_mnist_mlp2_forward.encrypt_and_run(keys, data)[0]
     fhe_preds = numpy.argmax(fhe_outputs, 1)
     print(list(map(lambda x: not x, fhe_preds - target)))
     print(fhe_preds)
