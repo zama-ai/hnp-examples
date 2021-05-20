@@ -48,7 +48,7 @@ def main():
 
     for function, function_string in list_of_functions:
 
-        print("\n*** Working on {function_string}:\n")
+        print(f"\n*** Working on {function_string}:\n")
 
         clear_result = function(weigths)
 
