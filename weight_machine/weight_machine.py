@@ -105,13 +105,18 @@ def main():
         keys = context.keygen()
 
         time_start = time.time()
-        fhe_result = fhe_function.encrypt_and_run(
-            keys,
-            weigths,
-        )[0]
+        fhe_result = fhe_function.encrypt_and_run(keys, weigths,)[
+            0
+        ][0]
         time_end = time.time()
 
         print(f"FHE: {function_string}: {fhe_result}, in {time_end - time_start:.2f} seconds")
+
+        diff = numpy.abs(fhe_result - clear_result)
+        ratio = diff / numpy.max(clear_result)
+
+        print(f"Diff: {diff}")
+        print(f"Ratio: {100 * ratio:.2f} %")
 
 
 if __name__ == "__main__":
