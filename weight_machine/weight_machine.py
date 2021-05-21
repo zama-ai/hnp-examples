@@ -2,6 +2,8 @@ import hnumpy as hnp
 from hnumpy.config import CompilationConfig
 import numpy
 import logging
+import sys
+from loguru import logger
 
 
 def get_clear_result(
@@ -60,8 +62,8 @@ def main():
     show_logging_fhe = False
 
     if not show_logging_fhe:
-        # logging.basicConfig(level=logging.ERROR)
-        logging.basicConfig(level=logging.CRITICAL)
+        logger.remove(0)
+        logger.add(sys.stderr, format="{time} {level} {message}", filter="my_module", level="INFO")
 
     # For minimum and maximum weights
     min_weight = 20
