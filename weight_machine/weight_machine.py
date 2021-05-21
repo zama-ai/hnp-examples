@@ -3,6 +3,7 @@ from hnumpy.config import CompilationConfig
 import numpy
 import logging
 import sys
+import time
 from loguru import logger
 
 
@@ -62,7 +63,11 @@ def main():
     show_logging_fhe = False
 
     if not show_logging_fhe:
+
+        # Remove the default logging system
         logger.remove(0)
+
+        # And replace it by your own, if you want
         logger.add(sys.stderr, format="{time} {level} {message}", filter="my_module", level="INFO")
 
     # For minimum and maximum weights
@@ -99,12 +104,14 @@ def main():
         context = fhe_function.create_context()
         keys = context.keygen()
 
+        time_start = time.time()
         fhe_result = fhe_function.encrypt_and_run(
             keys,
             weigths,
         )[0]
+        time_end = time.time()
 
-        print(f"FHE: {function_string}: {fhe_result}")
+        print(f"FHE: {function_string}: {fhe_result}, in {time_end - time_start:.2f} seconds")
 
 
 if __name__ == "__main__":
