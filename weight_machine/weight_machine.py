@@ -18,9 +18,39 @@ def get_sum_of_weights(
     return numpy.sum(weigths)
 
 
+def get_min_of_weights(
+    weigths: numpy.ndarray,
+):
+
+    # hnp doesn't have numpy.min() equivalent
+    a, b = numpy.split(weigths, 2)
+
+    while a.shape[0] != 1:
+        a = numpy.minimum(a, b)
+        a, b = numpy.split(a, 2)
+
+    return numpy.minimum(a, b)[0]
+
+
+def get_max_of_weights(
+    weigths: numpy.ndarray,
+):
+
+    # hnp doesn't have numpy.max() equivalent
+    a, b = numpy.split(weigths, 2)
+
+    while a.shape[0] != 1:
+        a = numpy.maximum(a, b)
+        a, b = numpy.split(a, 2)
+
+    return numpy.maximum(a, b)[0]
+
+
 list_of_functions = [
-    (get_clear_result, "average weight"),
-    (get_sum_of_weights, "sum of weights"),
+    (get_clear_result, "average weight", 100),
+    (get_sum_of_weights, "sum of weights", 100),
+    (get_min_of_weights, "min of weights", 4),
+    (get_max_of_weights, "max of weights", 4),
 ]
 
 
@@ -33,22 +63,19 @@ def main():
         # logging.basicConfig(level=logging.ERROR)
         logging.basicConfig(level=logging.CRITICAL)
 
-    # Number of weights
-    num_weights = 100
-
     # For minimum and maximum weights
     min_weight = 20
     max_weight = 200
 
-    array_shape = (num_weights,)
+    for function, function_string, num_weights in list_of_functions:
 
-    weigths = min_weight + (max_weight - min_weight) * numpy.random.random(array_shape).astype(
-        numpy.float32
-    )
+        print(f"\n*** Working on {function_string}: {num_weights} weights are used:\n")
 
-    for function, function_string in list_of_functions:
+        array_shape = (num_weights,)
 
-        print(f"\n*** Working on {function_string}:\n")
+        weigths = min_weight + (max_weight - min_weight) * numpy.random.random(array_shape).astype(
+            numpy.float32
+        )
 
         clear_result = function(weigths)
 
