@@ -25,7 +25,8 @@ def run_square_perimeter(square_lengths: numpy.ndarray):
     print(f"Square side lengths:\n{square_lengths}")
     clear_square_perimeters_output = square_perimeter(square_lengths)
 
-    config = CompilationConfig(parameter_optimizer="genetic", examples=(square_lengths,))
+    # config = CompilationConfig(parameter_optimizer="genetic", examples=(square_lengths,))
+    config = CompilationConfig(parameter_optimizer="genetic")
     # "handselected"
     # "genetic"
 
@@ -68,7 +69,8 @@ def run_square_area(square_lengths: numpy.ndarray):
     print(f"Square side lengths:\n{square_lengths}")
     clear_square_areas_output = square_area(square_lengths)
 
-    config = CompilationConfig(parameter_optimizer="genetic", examples=(square_lengths,))
+    # config = CompilationConfig(parameter_optimizer="genetic", examples=(square_lengths,))
+    config = CompilationConfig(parameter_optimizer="genetic")
     # "handselected"
     # "genetic"
 
