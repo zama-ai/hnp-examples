@@ -43,7 +43,7 @@ def run_square_perimeter(square_lengths: numpy.ndarray):
     context = fhe_square_perimeter.create_context()
     keys = context.keygen()
 
-    fhe_square_perimeter_output = fhe_square_perimeter.encrypt_and_run(keys, square_lengths)[0]
+    fhe_square_perimeter_output = fhe_square_perimeter.encrypt_and_run(keys, square_lengths)
     square_perimeter_output_abs_diff = numpy.abs(
         clear_square_perimeters_output - fhe_square_perimeter_output
     )
@@ -86,7 +86,7 @@ def run_square_area(square_lengths: numpy.ndarray):
     context = fhe_square_area.create_context()
     keys = context.keygen()
 
-    fhe_square_area_output = fhe_square_area.encrypt_and_run(keys, square_lengths)[0]
+    fhe_square_area_output = fhe_square_area.encrypt_and_run(keys, square_lengths)
 
     square_area_output_abs_diff = numpy.abs(clear_square_areas_output - fhe_square_area_output)
 
@@ -135,7 +135,7 @@ def run_rect_perimeter(rect_sides_lengths: numpy.ndarray):
     context = fhe_rect_perimeter.create_context()
     keys = context.keygen()
 
-    fhe_rect_perimeter_output = fhe_rect_perimeter.encrypt_and_run(keys, rect_sides_lengths)[0]
+    fhe_rect_perimeter_output = fhe_rect_perimeter.encrypt_and_run(keys, rect_sides_lengths)
 
     rect_perimeter_output_abs_diff = numpy.abs(
         clear_rect_perimeter_output - fhe_rect_perimeter_output
@@ -179,7 +179,7 @@ def run_rect_area(rect_sides_lengths: numpy.ndarray):
     context = fhe_rect_area.create_context()
     keys = context.keygen()
 
-    fhe_rect_area_output = fhe_rect_area.encrypt_and_run(keys, rect_sides_lengths)[0]
+    fhe_rect_area_output = fhe_rect_area.encrypt_and_run(keys, rect_sides_lengths)
 
     rect_area_output_abs_diff = numpy.abs(clear_rect_area_output - fhe_rect_area_output)
 

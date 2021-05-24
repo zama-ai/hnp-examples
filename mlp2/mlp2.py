@@ -98,7 +98,7 @@ def main():
     context = fhe_mnist_mlp2_forward.create_context()
     keys = context.keygen()
 
-    fhe_outputs = fhe_mnist_mlp2_forward.encrypt_and_run(keys, data)[0]
+    fhe_outputs = fhe_mnist_mlp2_forward.encrypt_and_run(keys, data)
     fhe_preds = numpy.argmax(fhe_outputs, 1)
     good_ones = list(map(lambda x: not x, fhe_preds - target))
     print("Good ones", good_ones)
