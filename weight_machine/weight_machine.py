@@ -7,7 +7,7 @@ import time
 from loguru import logger
 
 
-def get_clear_result(
+def get_average_of_weights(
     weigths: numpy.ndarray,
 ):
 
@@ -50,7 +50,7 @@ def get_max_of_weights(
 
 
 list_of_functions = [
-    (get_clear_result, "average weight", 100),
+    (get_average_of_weights, "average weight", 100),
     (get_sum_of_weights, "sum of weights", 100),
     (get_min_of_weights, "min of weights", 4),
     (get_max_of_weights, "max of weights", 4),
