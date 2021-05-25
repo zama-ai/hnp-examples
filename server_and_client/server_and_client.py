@@ -62,20 +62,24 @@ def main():
     context = fhe_function.create_context()
     keys = context.keygen()
 
+    # Private key: never give it to anyone
+    secret_keys = keys.secret_keys
+
+    # Public key: can safely be given to anyone, for FHE computation
+    public_keys = keys.public_keys
+
     time_start = time.time()
 
     # 2 - This is the encryption, done by the client on its trusted device,
     # for each new input
+    enc_sample = secret_keys.encrypt(weigths)
 
     # 3 - This is the FHE execution, done on the untrusted server
+    enc_result = fhe_function.run(public_keys, enc_sample)
 
     # 4 - This is decryption, done by the client on its trusted device, for
     # each new output
-
-    fhe_result = fhe_function.encrypt_and_run(
-        keys,
-        weigths,
-    )[0]
+    fhe_result = secret_keys.decrypt(enc_result)
 
     time_end = time.time()
 
