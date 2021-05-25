@@ -43,6 +43,7 @@ def main():
     print(f"Input {weigths}")
     print(f"Clear: {clear_result}")
 
+    # 0 - This is the compilation, done once for all
     config = CompilationConfig(parameter_optimizer="genetic")
 
     fhe_function = hnp.compile_fhe(
@@ -56,14 +57,26 @@ def main():
         config=config,
     )
 
+    # 1 - This is the key generation, done by the client on its trusted
+    # device, once for all
     context = fhe_function.create_context()
     keys = context.keygen()
 
     time_start = time.time()
+
+    # 2 - This is the encryption, done by the client on its trusted device,
+    # for each new input
+
+    # 3 - This is the FHE execution, done on the untrusted server
+
+    # 4 - This is decryption, done by the client on its trusted device, for
+    # each new output
+
     fhe_result = fhe_function.encrypt_and_run(
         keys,
         weigths,
     )[0]
+
     time_end = time.time()
 
     print(f"FHE: {function_string}: {fhe_result}, in {time_end - time_start:.2f} seconds")
