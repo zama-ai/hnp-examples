@@ -105,9 +105,10 @@ def main():
         keys = context.keygen()
 
         time_start = time.time()
-        fhe_result = fhe_function.encrypt_and_run(keys, weigths,)[
-            0
-        ][0]
+        fhe_result = fhe_function.encrypt_and_run(
+            keys,
+            weigths,
+        )[0]
         time_end = time.time()
 
         print(f"FHE: {function_string}: {fhe_result}, in {time_end - time_start:.2f} seconds")
