@@ -71,15 +71,17 @@ def main():
     time_start = time.time()
 
     # 2 - This is the encryption, done by the client on its trusted device,
-    # for each new input
-    enc_sample = secret_keys.encrypt(weigths)
+    # for each new input. Remark that this function uses keys (ie, not only
+    # secret_keys) because it also needs public information
+    enc_sample = keys.encrypt(weigths)
 
     # 3 - This is the FHE execution, done on the untrusted server
     enc_result = fhe_function.run(public_keys, enc_sample)
 
     # 4 - This is decryption, done by the client on its trusted device, for
-    # each new output
-    fhe_result = secret_keys.decrypt(enc_result)
+    # each new output. Remark that this function uses keys (ie, not only
+    # secret_keys) because it also needs public information
+    fhe_result = keys.decrypt(enc_result)
 
     time_end = time.time()
 
