@@ -17,7 +17,7 @@ def get_average_of_weights(
 def main():
 
     # Switch off logging / May be removed if you want to have all information
-    show_logging_fhe = False
+    show_logging_fhe = True
 
     if not show_logging_fhe:
 
@@ -31,7 +31,7 @@ def main():
     min_weight = 20
     max_weight = 200
 
-    function, function_string, num_weights = (get_average_of_weights, "average weight", 5)
+    function, function_string, num_weights = (get_average_of_weights, "average weight", 2)
 
     array_shape = (num_weights,)
 
@@ -44,7 +44,7 @@ def main():
     print(f"Clear: {clear_result}")
 
     # 0 - This is the compilation, done once for all
-    config = CompilationConfig(parameter_optimizer="genetic")
+    config = CompilationConfig(parameter_optimizer="handselected")
 
     fhe_function = hnp.compile_fhe(
         function,
@@ -75,13 +75,20 @@ def main():
     # secret_keys) because it also needs public information
     enc_sample = keys.encrypt(weigths)
 
+    print("weigths", weigths.shape)
+    print("enc_sample", enc_sample.shape)
+
     # 3 - This is the FHE execution, done on the untrusted server
     enc_result = fhe_function.run(public_keys, enc_sample)
+
+    print("enc_result", enc_result.shape)
 
     # 4 - This is decryption, done by the client on its trusted device, for
     # each new output. Remark that this function uses keys (ie, not only
     # secret_keys) because it also needs public information
-    fhe_result = keys.decrypt(enc_result)
+    fhe_result = keys.decrypt(enc_result)[0][0]
+
+    print("fhe_result", fhe_result)
 
     time_end = time.time()
 
