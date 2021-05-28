@@ -42,20 +42,22 @@ def user_generates_its_key(fhe_function):
     return keys, public_keys
 
 
-def user_picks_input_and_encrypts():
+def user_picks_input_and_encrypts(
+    function, function_string, keys, min_weight, max_weight, num_weights
+):
     """Done by the user on its private and secure device"""
 
     # Pick an input
     weigths = numpy.random.uniform(min_weight, max_weight, (num_weights,))
-    print(f"Picking inputs {weigths}")
+    print(f"    Picking inputs {weigths}")
 
     encrypted_weights = keys.encrypt(weigths)
 
     # Also, for comparison, we compute here the expected result
     clear_result = function(weigths)
 
-    print(f"\nCalling {function_string} in clear")
-    print(f"Result in clear: {clear_result}")
+    print(f"\n    Calling {function_string} in clear")
+    print(f"    Result in clear: {clear_result}")
 
     return encrypted_weights, clear_result
 
@@ -91,40 +93,45 @@ def main():
     print(f"Creating keys")
     keys, public_keys = user_generates_its_key(fhe_function)
 
-    #
-    encrypted_weights, clear_result = user_picks_input_and_encrypts()
+    # Then, we can use the compiled function and keys for several inputs
+    for i in range(2):
 
-    # 2 - This is the encryption, done by the client on its trusted device,
-    # for each new input. Remark that this function uses keys (ie, not only
-    # secret_keys) because it also needs public information
-    time_start = time.time()
+        print(f"\nRunning {i}-th test")
 
-    print(f"\nCalling {function_string} in FHE")
-    print(f"Encrypted input shape: {encrypted_weights.shape}")
+        # 2 - Pick inputs on the user device and encrypt them
+        #
+        # Remark that clear_result is just for comparison between clear and FHE
+        # executions, and would not appear in a production kind-of system
+        encrypted_weights, clear_result = user_picks_input_and_encrypts(
+            function, function_string, keys, min_weight, max_weight, num_weights
+        )
 
-    # 3 - This is the FHE execution, done on the untrusted server
-    encrypted_result = fhe_function.run(public_keys, encrypted_weights)
+        # 3 - This is the FHE execution, done on the untrusted server
+        print(f"\n    Calling {function_string} in FHE")
+        print(f"    Encrypted input shape: {encrypted_weights.shape}")
 
-    print(f"Encrypted result shape after FHE computation: {encrypted_result.shape}")
+        time_start = time.time()
+        encrypted_result = fhe_function.run(public_keys, encrypted_weights)
+        time_end = time.time()
 
-    # 4 - This is decryption, done by the client on its trusted device, for
-    # each new output. Remark that this function uses keys (ie, not only
-    # secret_keys) because it also needs public information
-    fhe_result = keys.decrypt(encrypted_result)[0][0]
+        print(f"    Encrypted result shape after FHE computation: {encrypted_result.shape}")
 
-    print(f"Decrypted result as computed through the FHE computation: {fhe_result}")
+        # 4 - This is decryption, done by the client on its trusted device, for
+        # each new output. Remark that this function uses keys (ie, not only
+        # secret_keys) because it also needs public information
+        fhe_result = keys.decrypt(encrypted_result)[0][0]
 
-    time_end = time.time()
+        print(f"    Decrypted result as computed through the FHE computation: {fhe_result}")
 
-    print(f"FHE computation was done in {time_end - time_start:.2f} seconds")
+        print(f"    FHE computation was done in {time_end - time_start:.2f} seconds")
 
-    diff = numpy.abs(fhe_result - clear_result)
-    ratio = diff / numpy.max(clear_result)
+        diff = numpy.abs(fhe_result - clear_result)
+        ratio = diff / numpy.max(clear_result)
 
-    print(
-        f"\nDifference between computation in clear and in FHE (expected to be as small as possible): {diff}"
-    )
-    print(f"Ratio (expected to be as small as possible): {100 * ratio:.2f} %")
+        print(
+            f"\n    Difference between computation in clear and in FHE (expected to be as small as possible): {diff}"
+        )
+        print(f"    Ratio (expected to be as small as possible): {100 * ratio:.2f} %")
 
 
 if __name__ == "__main__":
