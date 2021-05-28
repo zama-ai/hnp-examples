@@ -45,7 +45,7 @@ def user_generates_its_key(fhe_function):
 def user_picks_input_and_encrypts(
     function, function_string, keys, min_weight, max_weight, num_weights
 ):
-    """Done by the user on its private and secure device"""
+    """Done by the user on its private and secure device, with its private keys"""
 
     # Pick an input
     weigths = numpy.random.uniform(min_weight, max_weight, (num_weights,))
@@ -54,10 +54,13 @@ def user_picks_input_and_encrypts(
     encrypted_weights = keys.encrypt(weigths)
 
     # Also, for comparison, we compute here the expected result
+    time_start = time.time()
     clear_result = function(weigths)
+    time_end = time.time()
 
     print(f"\n    Calling {function_string} in clear")
     print(f"    Result in clear: {clear_result}")
+    print(f"    Clear computation was done in {time_end - time_start:.2f} seconds")
 
     return encrypted_weights, clear_result
 
@@ -66,16 +69,27 @@ def running_fhe_computation_on_untrusted_server(
     fhe_function, function_string, public_keys, encrypted_weights
 ):
     """Done on the untrusted server, but still preserves the user's privacy, thanks
-    to the FHE properties"""
-    time_end = time.time()
-
+    to the FHE properties. Only public keys are used"""
     print(f"\n    Calling {function_string} in FHE")
     print(f"    Encrypted input shape: {encrypted_weights.shape}")
 
+    time_start = time.time()
     encrypted_result = fhe_function.run(public_keys, encrypted_weights)
+    time_end = time.time()
 
     print(f"    Encrypted result shape after FHE computation: {encrypted_result.shape}")
+    print(f"    FHE computation was done in {time_end - time_start:.2f} seconds")
+
     return encrypted_result
+
+
+def user_decrypts(keys, encrypted_result):
+    """Done by the user on its private and secure device, with its private keys"""
+    fhe_result = keys.decrypt(encrypted_result)[0][0]
+
+    print(f"    Decrypted result as computed through the FHE computation: {fhe_result}")
+
+    return fhe_result
 
 
 def main():
@@ -123,28 +137,25 @@ def main():
         )
 
         # 3 - This is the FHE execution, done on the untrusted server
-        time_start = time.time()
         encrypted_result = running_fhe_computation_on_untrusted_server(
             fhe_function, function_string, public_keys, encrypted_weights
         )
-        time_end = time.time()
 
         # 4 - This is decryption, done by the client on its trusted device, for
         # each new output. Remark that this function uses keys (ie, not only
         # secret_keys) because it also needs public information
-        fhe_result = keys.decrypt(encrypted_result)[0][0]
+        fhe_result = user_decrypts(keys, encrypted_result)
 
-        print(f"    Decrypted result as computed through the FHE computation: {fhe_result}")
-
-        print(f"    FHE computation was done in {time_end - time_start:.2f} seconds")
-
+        # 5 - Finally, for the check and demo, comparing the results. Remark that
+        # in a real product, once it is known that FHE results are precise
+        # enough
         diff = numpy.abs(fhe_result - clear_result)
         ratio = diff / numpy.max(clear_result)
 
         print(
             f"\n    Difference between computation in clear and in FHE (expected to be as small as possible): {diff}"
         )
-        print(f"    Ratio (expected to be as small as possible): {100 * ratio:.2f} %")
+        print(f"    Ratio of difference (expected to be as small as possible): {100 * ratio:.2f} %")
 
 
 if __name__ == "__main__":
