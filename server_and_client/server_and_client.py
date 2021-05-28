@@ -42,6 +42,24 @@ def user_generates_its_key(fhe_function):
     return keys, public_keys
 
 
+def user_picks_input_and_encrypts():
+    """Done by the user on its private and secure device"""
+
+    # Pick an input
+    weigths = numpy.random.uniform(min_weight, max_weight, (num_weights,))
+    print(f"Picking inputs {weigths}")
+
+    encrypted_weights = keys.encrypt(weigths)
+
+    # Also, for comparison, we compute here the expected result
+    clear_result = function(weigths)
+
+    print(f"\nCalling {function_string} in clear")
+    print(f"Result in clear: {clear_result}")
+
+    return encrypted_weights, clear_result
+
+
 def main():
 
     # Switch off logging / May be removed if you want to have all information
@@ -73,34 +91,26 @@ def main():
     print(f"Creating keys")
     keys, public_keys = user_generates_its_key(fhe_function)
 
-    # Pick an input
-    weigths = numpy.random.uniform(min_weight, max_weight, (num_weights,))
-    print(f"Picking inputs {weigths}")
-
-    # Computing in clear, to compare with the FHE execution
-    clear_result = function(weigths)
-
-    print(f"\nCalling {function_string} in clear")
-    print(f"Result in clear: {clear_result}")
+    #
+    encrypted_weights, clear_result = user_picks_input_and_encrypts()
 
     # 2 - This is the encryption, done by the client on its trusted device,
     # for each new input. Remark that this function uses keys (ie, not only
     # secret_keys) because it also needs public information
     time_start = time.time()
-    enc_sample = keys.encrypt(weigths)
 
     print(f"\nCalling {function_string} in FHE")
-    print(f"Encrypted input shape: {enc_sample.shape}")
+    print(f"Encrypted input shape: {encrypted_weights.shape}")
 
     # 3 - This is the FHE execution, done on the untrusted server
-    enc_result = fhe_function.run(public_keys, enc_sample)
+    encrypted_result = fhe_function.run(public_keys, encrypted_weights)
 
-    print(f"Encrypted result shape after FHE computation: {enc_result.shape}")
+    print(f"Encrypted result shape after FHE computation: {encrypted_result.shape}")
 
     # 4 - This is decryption, done by the client on its trusted device, for
     # each new output. Remark that this function uses keys (ie, not only
     # secret_keys) because it also needs public information
-    fhe_result = keys.decrypt(enc_result)[0][0]
+    fhe_result = keys.decrypt(encrypted_result)[0][0]
 
     print(f"Decrypted result as computed through the FHE computation: {fhe_result}")
 
