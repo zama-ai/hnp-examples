@@ -10,8 +10,26 @@ from loguru import logger
 def get_average_of_weights(
     weigths: numpy.ndarray,
 ):
-
+    """The function to execute in FHE, on the untrusted server"""
     return numpy.mean(weigths)
+
+
+def compile_function(function, min_weight, max_weight, num_weights):
+    """Compile once for all the function"""
+    config = CompilationConfig(parameter_optimizer="handselected")
+
+    fhe_function = hnp.compile_fhe(
+        function,
+        {
+            "weigths": hnp.encrypted_ndarray(
+                bounds=(min_weight, max_weight),
+                shape=(num_weights,),
+            ),
+        },
+        config=config,
+    )
+
+    return fhe_function
 
 
 def main():
@@ -27,35 +45,17 @@ def main():
         # And replace it by your own, if you want
         logger.add(sys.stderr, format="{time} {level} {message}", filter="my_module", level="INFO")
 
-    # For minimum and maximum weights
+    # Settings
     min_weight = 20
     max_weight = 200
+    num_weights = 3
+    function = get_average_of_weights
+    function_string = "get_average_of_weights"
 
-    function, function_string, num_weights = (get_average_of_weights, "average weight", 2)
-
-    array_shape = (num_weights,)
-
-    weigths = numpy.random.uniform(min_weight, max_weight, array_shape)
-
-    clear_result = function(weigths)
-
-    print(f"Calling {function_string}")
-    print(f"Input {weigths}")
-    print(f"Clear: {clear_result}")
-
-    # 0 - This is the compilation, done once for all
-    config = CompilationConfig(parameter_optimizer="handselected")
-
-    fhe_function = hnp.compile_fhe(
-        function,
-        {
-            "weigths": hnp.encrypted_ndarray(
-                bounds=(min_weight, max_weight),
-                shape=weigths.shape,
-            ),
-        },
-        config=config,
-    )
+    # 0 - Compile the function. The function definition is known to the one which compiles it, so if
+    # eg, it contains confidential information that the function wants to keep private, it may be done
+    # on premise
+    fhe_function = compile_function(function, min_weight, max_weight, num_weights)
 
     # 1 - This is the key generation, done by the client on its trusted
     # device, once for all
@@ -69,6 +69,18 @@ def main():
     public_keys = keys.public_keys
 
     time_start = time.time()
+
+    # Pick an input
+    weigths = numpy.random.uniform(min_weight, max_weight, (num_weights,))
+
+    # Computing in clear, to compare with the FHE execution
+    weigths = numpy.random.uniform(min_weight, max_weight, (num_weights,))
+
+    clear_result = function(weigths)
+
+    print(f"Calling {function_string}")
+    print(f"Input {weigths}")
+    print(f"Clear: {clear_result}")
 
     # 2 - This is the encryption, done by the client on its trusted device,
     # for each new input. Remark that this function uses keys (ie, not only
