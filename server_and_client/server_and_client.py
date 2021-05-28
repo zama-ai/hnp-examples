@@ -32,6 +32,16 @@ def compile_function(function, min_weight, max_weight, num_weights):
     return fhe_function
 
 
+def user_generates_its_key(fhe_function):
+    """Done by the user on its private and secure device"""
+    keys = fhe_function.create_context().keygen()
+
+    # Public key: can safely be given to anyone, for FHE computation
+    public_keys = keys.public_keys
+
+    return keys, public_keys
+
+
 def main():
 
     # Switch off logging / May be removed if you want to have all information
@@ -61,13 +71,7 @@ def main():
     # 1 - This is the key generation, done by the client on its trusted
     # device, once for all
     print(f"Creating keys")
-    keys = fhe_function.create_context().keygen()
-
-    # Private key: never give it to anyone
-    secret_keys = keys.secret_keys
-
-    # Public key: can safely be given to anyone, for FHE computation
-    public_keys = keys.public_keys
+    keys, public_keys = user_generates_its_key(fhe_function)
 
     # Pick an input
     weigths = numpy.random.uniform(min_weight, max_weight, (num_weights,))
