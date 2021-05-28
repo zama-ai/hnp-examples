@@ -67,49 +67,49 @@ def main():
     # Public key: can safely be given to anyone, for FHE computation
     public_keys = keys.public_keys
 
-    time_start = time.time()
-
     # Pick an input
     weigths = numpy.random.uniform(min_weight, max_weight, (num_weights,))
 
     # Computing in clear, to compare with the FHE execution
-    weigths = numpy.random.uniform(min_weight, max_weight, (num_weights,))
-
     clear_result = function(weigths)
 
-    print(f"Calling {function_string}")
-    print(f"Input {weigths}")
-    print(f"Clear: {clear_result}")
+    print(f"Using input {weigths}")
+
+    print(f"\nCalling {function_string} in clear")
+    print(f"Result in clear: {clear_result}")
 
     # 2 - This is the encryption, done by the client on its trusted device,
     # for each new input. Remark that this function uses keys (ie, not only
     # secret_keys) because it also needs public information
+    time_start = time.time()
     enc_sample = keys.encrypt(weigths)
 
-    print("weigths", weigths.shape)
-    print("enc_sample", enc_sample.shape)
+    print(f"\nCalling {function_string} in FHE")
+    print("Encrypted input", enc_sample)
 
     # 3 - This is the FHE execution, done on the untrusted server
     enc_result = fhe_function.run(public_keys, enc_sample)
 
-    print("enc_result", enc_result.shape)
+    print("Encrypted result after FHE computation", enc_result)
 
     # 4 - This is decryption, done by the client on its trusted device, for
     # each new output. Remark that this function uses keys (ie, not only
     # secret_keys) because it also needs public information
     fhe_result = keys.decrypt(enc_result)[0][0]
 
-    print("fhe_result", fhe_result)
+    print("Decrypted result as computed through the FHE computation", fhe_result)
 
     time_end = time.time()
 
-    print(f"FHE: {function_string}: {fhe_result}, in {time_end - time_start:.2f} seconds")
+    print(f"FHE computation was done in {time_end - time_start:.2f} seconds")
 
     diff = numpy.abs(fhe_result - clear_result)
     ratio = diff / numpy.max(clear_result)
 
-    print(f"Diff: {diff}")
-    print(f"Ratio: {100 * ratio:.2f} %")
+    print(
+        f"Difference between computation in clear and in FHE (expected to be as small as possible): {diff}"
+    )
+    print(f"Ratio (expected to be as small as possible): {100 * ratio:.2f} %")
 
 
 if __name__ == "__main__":
