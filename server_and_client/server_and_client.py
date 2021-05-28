@@ -55,10 +55,12 @@ def main():
     # 0 - Compile the function. The function definition is known to the one which compiles it, so if
     # eg, it contains confidential information that the function wants to keep private, it may be done
     # on premise
+    print(f"Compiling the function")
     fhe_function = compile_function(function, min_weight, max_weight, num_weights)
 
     # 1 - This is the key generation, done by the client on its trusted
     # device, once for all
+    print(f"Creating keys")
     keys = fhe_function.create_context().keygen()
 
     # Private key: never give it to anyone
@@ -69,11 +71,10 @@ def main():
 
     # Pick an input
     weigths = numpy.random.uniform(min_weight, max_weight, (num_weights,))
+    print(f"Picking inputs {weigths}")
 
     # Computing in clear, to compare with the FHE execution
     clear_result = function(weigths)
-
-    print(f"Using input {weigths}")
 
     print(f"\nCalling {function_string} in clear")
     print(f"Result in clear: {clear_result}")
@@ -85,19 +86,19 @@ def main():
     enc_sample = keys.encrypt(weigths)
 
     print(f"\nCalling {function_string} in FHE")
-    print("Encrypted input", enc_sample)
+    print(f"Encrypted input shape: {enc_sample.shape}")
 
     # 3 - This is the FHE execution, done on the untrusted server
     enc_result = fhe_function.run(public_keys, enc_sample)
 
-    print("Encrypted result after FHE computation", enc_result)
+    print(f"Encrypted result shape after FHE computation: {enc_result.shape}")
 
     # 4 - This is decryption, done by the client on its trusted device, for
     # each new output. Remark that this function uses keys (ie, not only
     # secret_keys) because it also needs public information
     fhe_result = keys.decrypt(enc_result)[0][0]
 
-    print("Decrypted result as computed through the FHE computation", fhe_result)
+    print(f"Decrypted result as computed through the FHE computation: {fhe_result}")
 
     time_end = time.time()
 
@@ -107,7 +108,7 @@ def main():
     ratio = diff / numpy.max(clear_result)
 
     print(
-        f"Difference between computation in clear and in FHE (expected to be as small as possible): {diff}"
+        f"\nDifference between computation in clear and in FHE (expected to be as small as possible): {diff}"
     )
     print(f"Ratio (expected to be as small as possible): {100 * ratio:.2f} %")
 
