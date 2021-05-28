@@ -59,8 +59,7 @@ def main():
 
     # 1 - This is the key generation, done by the client on its trusted
     # device, once for all
-    context = fhe_function.create_context()
-    keys = context.keygen()
+    keys = fhe_function.create_context().keygen()
 
     # Private key: never give it to anyone
     secret_keys = keys.secret_keys
