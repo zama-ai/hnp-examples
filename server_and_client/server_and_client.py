@@ -16,6 +16,7 @@ def get_average_of_weights(
 
 def compile_function(function, min_weight, max_weight, num_weights):
     """Compile once for all the function"""
+    print(f"Compiling the function")
     config = CompilationConfig(parameter_optimizer="handselected")
 
     fhe_function = hnp.compile_fhe(
@@ -34,6 +35,7 @@ def compile_function(function, min_weight, max_weight, num_weights):
 
 def user_generates_its_key(fhe_function):
     """Done by the user on its private and secure device"""
+    print(f"Generating keys")
     keys = fhe_function.create_context().keygen()
 
     # Public key: can safely be given to anyone, for FHE computation
@@ -108,19 +110,17 @@ def main():
     # Settings
     min_weight = 20
     max_weight = 200
-    num_weights = 3
+    num_weights = 10
     function = get_average_of_weights
     function_string = "get_average_of_weights"
 
     # 0 - Compile the function. The function definition is known to the one which compiles it, so if
     # eg, it contains confidential information that the function wants to keep private, it may be done
     # on premise
-    print(f"Compiling the function")
     fhe_function = compile_function(function, min_weight, max_weight, num_weights)
 
     # 1 - This is the key generation, done by the client on its trusted
     # device, once for all
-    print(f"Creating keys")
     keys, public_keys = user_generates_its_key(fhe_function)
 
     # Then, we can use the compiled function and keys for several inputs
