@@ -87,7 +87,7 @@ def running_fhe_computation_on_untrusted_server(
 
 def user_decrypts(keys, encrypted_result):
     """Done by the user on its private and secure device, with its private keys"""
-    fhe_result = keys.decrypt(encrypted_result)[0][0]
+    fhe_result = keys.decrypt(encrypted_result)[0]
 
     print(f"    Decrypted result as computed through the FHE computation: {fhe_result}")
 
