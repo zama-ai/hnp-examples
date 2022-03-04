@@ -1,3 +1,5 @@
+:warning: *This project is no longer supported. Users are encouraged to move to* [Concrete Numpy](https://github.com/zama-ai/concrete-numpy) :warning:
+
 # HNP examples
 
 This repository is a collection of examples for Homomorphic Numpy (HNP), a prototype
